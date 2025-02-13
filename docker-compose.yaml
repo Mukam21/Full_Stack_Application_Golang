@@ -27,8 +27,8 @@ services:
       # - ENV=dev
       PG_HOST: postgres  # имя сервиса PostgreSQL
       PG_PORT: 5432
-      PG_USER: postgres
-      PG_PASSWORD: mukamusmanow
+      PG_USER: ...
+      PG_PASSWORD: ...
       PG_DB: postgres
       PG_SSL: disable
     develop:
@@ -45,8 +45,8 @@ services:
     image: "postgres:alpine3.20"
     environment:
       #- POSTGRES_PASSWORD=${PG_PASSWORD}
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mukamusmanow
+      POSTGRES_USER: ...
+      POSTGRES_PASSWORD: ...
       POSTGRES_DB: postgres
     ports:
       - "5432-5432"
