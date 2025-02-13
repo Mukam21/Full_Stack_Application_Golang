@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  reverse-proxy:
+    image: traefik:v3.1.0
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  goapp:
+    build:
+      context: ./src
+    image: goapp
+    expose:
+      - "8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.goapp.rule=Host(`127.0.0.1`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.goapp.loadbalancer.server.port=8080"
+    env_file:
+      - .env
+    environment:
+      # - ENV=dev
+      PG_HOST: postgres  # имя сервиса PostgreSQL
+      PG_PORT: 5432
+      PG_USER: postgres
+      PG_PASSWORD: mukamusmanow
+      PG_DB: postgres
+      PG_SSL: disable
+    develop:
+      watch:
+        - action: sync
+          path: src/
+          target: /go/src/app
+        - action: rebuild 
+          path: src/
+    depends_on:
+      - reverse-proxy
+      - postgres
+  postgres:
+    image: "postgres:alpine3.20"
+    environment:
+      #- POSTGRES_PASSWORD=${PG_PASSWORD}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mukamusmanow
+      POSTGRES_DB: postgres
+    ports:
+      - "5432-5432"
+    volumes:
+      - "pg_data:/var/lib/postgresql/data"
+      - "./schema.sql:/docker-entrypoint-initdb.d/schema.sql"
+    command: ["postgres", "-c", "log_statement=none"]
+volumes:
+  pg_data:
